@@ -13,16 +13,19 @@ async function bootstrap() {
       cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 1 day
         httpOnly: true,
-        sameSite: 'lax', // 🔥 this makes cookie survive between ports
+        sameSite: 'lax',
       },
     }),
   );
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'https://fabricfinds.vercel.app/'
+    ],
     credentials: true,
   });
 
-  await app.listen(3001);
+  await app.listen(process.env.PORT || 3001, '0.0.0.0');
 }
 bootstrap();
