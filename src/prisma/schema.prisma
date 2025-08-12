@@ -16,10 +16,13 @@ model cart {
   quantity    Int
   clothe_id   Int
   email       String  @db.VarChar(255)
-  user        user    @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: NoAction, map: "fk_cart_user_email")
+
+  user    user    @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: NoAction, map: "fk_cart_user_email")
+  clothes clothes @relation(fields: [clothe_id], references: [id], onDelete: Cascade) // ← add this
 
   @@index([email], map: "fk_cart_user_email")
 }
+
 
 model clothes {
   id          Int      @id @default(autoincrement())
