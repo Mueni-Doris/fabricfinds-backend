@@ -17,5 +17,10 @@ async function bootstrap() {
 
   // IMPORTANT: Listen on 0.0.0.0 for Railway
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
+  console.log(`Application is running on: ${await app.getUrl()}`);
+  console.log(`Listening on port: ${process.env.PORT || 3000}`);
+  console.log(`CORS enabled for all origins`);
+  console.log(`Health check endpoint available at: /health`);
+  console.log(`Server started at: ${new Date().toISOString()}`);
 }
 bootstrap();
