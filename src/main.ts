@@ -28,7 +28,7 @@ async function bootstrap() {
 
   // Enable CORS if frontend is separate
   app.enableCors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: process.env.CLIENT_URL || 'https://fabricfinds.vercel.app',
     credentials: true,
   });
 
