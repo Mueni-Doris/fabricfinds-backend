@@ -1,35 +1,38 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
+import * as cookieParser from 'cookie-parser';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Session middleware
+  // Cookie parser
+  app.use(cookieParser());
+
+  // Sessions (use your real SESSION_SECRET in Railway env vars)
   app.use(
     session({
-      secret: '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806',
+      secret: process.env.SESSION_SECRET || '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806et',
       resave: false,
       saveUninitialized: false,
       cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        secure: process.env.NODE_ENV === 'production', // true in prod
         httpOnly: true,
-        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
       },
     }),
   );
 
-  // CORS configuration
+  // Enable CORS if frontend is separate
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'https://fabricfinds.vercel.app', // 🚫 no trailing slash
-    ],
+    origin: process.env.CLIENT_URL || '*',
     credentials: true,
   });
 
-  // Listen on the Railway-assigned port or default to 3001 locally
-  await app.listen(process.env.PORT || 3001, '0.0.0.0');
+  // This is key for Railway
+  await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
-
 bootstrap();
