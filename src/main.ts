@@ -9,30 +9,37 @@ dotenv.config();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Cookie parser
+  // Parse cookies
   app.use(cookieParser());
 
-  // Sessions (use your real SESSION_SECRET in Railway env vars)
+  // Session middleware (use SESSION_SECRET in Railway env vars)
   app.use(
     session({
-      secret: process.env.SESSION_SECRET || '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806et',
+      secret: process.env.SESSION_SECRET || 'fallback_secret_change_me',
       resave: false,
       saveUninitialized: false,
       cookie: {
-        secure: process.env.NODE_ENV === 'production', // true in prod
+        secure: process.env.NODE_ENV === 'production', // send only over HTTPS in prod
         httpOnly: true,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 day
       },
     }),
   );
 
-  // Enable CORS if frontend is separate
+  // CORS config — no trailing slash in origin
   app.enableCors({
-    origin: process.env.CLIENT_URL || 'https://fabricfinds.vercel.app',
+    origin: [
+      'http://localhost:3000',
+      'https://fabricfinds.vercel.app',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
 
-  // This is key for Railway
+  // Listen on the Railway port
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
+
 bootstrap();
