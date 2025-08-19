@@ -10,11 +10,12 @@ async function bootstrap() {
       secret: process.env.SESSION_SECRET || '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806et',
       resave: false,
       saveUninitialized: false,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
-        httpOnly: true,
-        sameSite: 'lax',
-      },
+cookie: {
+  maxAge: 1000 * 60 * 60 * 24,
+  httpOnly: true,
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: process.env.NODE_ENV === 'production',
+}
     }),
   );
 
