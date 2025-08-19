@@ -13,8 +13,8 @@ async function bootstrap() {
 cookie: {
   maxAge: 1000 * 60 * 60 * 24,
   httpOnly: true,
-  sameSite: 'none',   // force none
-  secure: true,       // force secure
+  sameSite: 'none',
+  secure: process.env.NODE_ENV === 'production', // only force secure in prod
 }
     }),
   );
