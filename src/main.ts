@@ -5,19 +5,21 @@ import * as session from 'express-session';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806et',
-      resave: false,
-      saveUninitialized: false,
-cookie: {
-  maxAge: 1000 * 60 * 60 * 24,
-  httpOnly: true,
-  sameSite: 'none',
-  secure: process.env.NODE_ENV === 'production', // only force secure in prod
-}
-    }),
-  );
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    },
+  }),
+);
+
+
 
   app.enableCors({
     origin: [
