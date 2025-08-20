@@ -5,40 +5,45 @@ import * as session from 'express-session';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-      httpOnly: true,
-      sameSite: "none",  //  must be none
-      secure: true,      
-    },
-  }),
-);
+  // ✅ Session middleware
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'supersecretkey',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        httpOnly: true,
+        sameSite: 'none', // Required for cross-site cookies
+        secure: true, // Must be true if using HTTPS
+      },
+    }),
+  );
 
-
-
-
+  // ✅ Enable CORS for frontend origins
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      'https://fabricfinds.vercel.app', 
+      'https://fabricfinds.vercel.app',
     ],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // ✅ allow all necessary verbs
-    allowedHeaders: ['Content-Type', 'Authorization'],   // ✅ allow preflighted headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // // ✅ Explicitly respond to preflight OPTIONS requests
-  // app.getHttpAdapter().getInstance().options('*', (_, resquest) => {
-  //   res.sendStatus(200);
-  // });
-    const PORT = process.env.PORT || 3001;
+  // ✅ Ensure preflight requests are handled
+  const server = app.getHttpAdapter().getInstance();
+  server.options('*', (req, res) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(200);
+  });
 
-
-await app.listen(PORT, '0.0.0.0');}
+  const PORT = process.env.PORT || 3001;
+  await app.listen(PORT, '0.0.0.0');
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+}
 
 bootstrap();
