@@ -1,6 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Request, Response } from 'express';
 import * as session from 'express-session';
 
 async function bootstrap() {
@@ -30,16 +29,6 @@ async function bootstrap() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-  });
-
-  // ✅ Ensure preflight requests are handled
-  const server = app.getHttpAdapter().getInstance();
-server.options('*', (req: Request, res: Response) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.sendStatus(200);
   });
 
   const PORT = process.env.PORT || 3001;
