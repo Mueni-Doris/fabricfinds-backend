@@ -36,26 +36,31 @@ export class AuthController {
     @Body() body: { email: string; password: string },
     @Req() req: Request
   ) {
-    const result = await this.authService.login(body.email, body.password);
+    try {
+      const result = await this.authService.login(body.email, body.password);
 
-    if (result.success && result.user) {
-      const { email, phone_number, location } = result.user;
+      if (result.success && result.user) {
+        const { email, phone_number, location } = result.user;
 
-      req.session.user = {
-        email,
-        phone_number:String(phone_number),
-        location,
+        // 🚀 FIX: Set session data directly - no manual save needed
+        req.session.user = {
+          email,
+          phone_number: String(phone_number),
+          location,
+        };
+
+        // ✅ REMOVED the problematic manual session saving
+        // Express-session automatically saves when response is sent
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Login controller error:', error);
+      return { 
+        success: false, 
+        message: 'Login failed due to server error' 
       };
-
-      await new Promise<void>((resolve, reject) => {
-        req.session.save((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
     }
-
-    return result;
   }
 
   @Get('check-session')
@@ -70,16 +75,29 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Req() req: Request) {
-    return new Promise((resolve, reject) => {
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Logout error:', err);
-          return reject({ success: false, message: 'Logout failed' });
-        }
-        req.res?.clearCookie('connect.sid');
-        resolve({ success: true, message: 'Logged out successfully' });
+  async logout(@Req() req: Request) {
+    try {
+      return new Promise((resolve, reject) => {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Logout error:', err);
+            return reject({ success: false, message: 'Logout failed' });
+          }
+          // ✅ Clear the session cookie
+          if (req.res) {
+            req.res.clearCookie('connect.sid', {
+              path: '/',
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            });
+          }
+          resolve({ success: true, message: 'Logged out successfully' });
+        });
       });
-    });
+    } catch (error) {
+      console.error('Logout error:', error);
+      return { success: false, message: 'Logout failed' };
+    }
   }
 }
