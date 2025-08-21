@@ -9,15 +9,16 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // 2. ✅ Enable CORS for frontend origins
-  app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'https://fabricfinds.vercel.app',
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
-  });
+app.enableCors({
+  origin: [
+    'http://localhost:3000', // Development
+    'https://fabricfinds.vercel.app', // Production frontend
+    'https://fabricfinds-backend-production.up.railway.app', // Production backend (allow itself)
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'Set-Cookie'],
+});
 
   const PORT = process.env.PORT || 3001;
   await app.listen(PORT, '0.0.0.0');
