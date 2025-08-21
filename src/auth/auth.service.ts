@@ -67,18 +67,19 @@ async login(email: string, password: string) {
       return { success: false, message: '🔐 Password does not match' };
     }
 
-    return {
-      success: true,
-      message: '✅ Login successful 🎊',
-      user: {
-        email: user.email,
-        username: user.username,
-        full_name: user.full_name,
-        role: user.role,
-        location: user.location,
-        phone_number: Number(user.phone_number), // 👈 CONVERT BigInt to Number
-      },
-    };
+// In auth.service.ts login method:
+return {
+  success: true,
+  message: '✅ Login successful 🎊',
+  user: {
+    email: user.email || '',
+    username: user.username || '',
+    full_name: user.full_name || '',
+    role: user.role || '',
+    location: user.location || '',
+    phone_number: user.phone_number ? Number(user.phone_number) : null, // 👈 Safe conversion
+  },
+};
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     return {
@@ -86,4 +87,5 @@ async login(email: string, password: string) {
       message: `Internal Server Error: ${errorMessage}`,
     };
   }
+
 }}

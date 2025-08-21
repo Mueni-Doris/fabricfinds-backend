@@ -31,48 +31,45 @@ export class AuthController {
     return this.authService.register(userData);
   }
 
-  @Post('login')
-  async login(
-    @Body() body: { email: string; password: string },
-    @Req() req: Request
-  ) {
-    try {
-      const result = await this.authService.login(body.email, body.password);
+@Post('login')
+async login(
+  @Body() body: { email: string; password: string },
+  @Req() req: Request
+) {
+  try {
+    const result = await this.authService.login(body.email, body.password);
 
-      if (result.success && result.user) {
-        const { email, phone_number, location } = result.user;
-
-        // 🚀 FIX: Set session data directly - no manual save needed
-        req.session.user = {
-          email,
-          phone_number: String(phone_number),
-          location,
-        };
-
-        // ✅ REMOVED the problematic manual session saving
-        // Express-session automatically saves when response is sent
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Login controller error:', error);
-      return { 
-        success: false, 
-        message: 'Login failed due to server error' 
+    if (result.success && result.user) {
+      const { email, phone_number, location } = result.user;
+      
+      req.session.user = {
+        email: email || '',
+        phone_number: phone_number !== undefined && phone_number !== null 
+          ? String(phone_number) // 👈 Convert to STRING instead of Number
+          : undefined,
+        location: location || '',
       };
     }
-  }
 
-  @Get('check-session')
-  checkSession(@Req() req: Request) {
-    const user = req.session.user;
-    return {
-      loggedIn: !!user,
-      user: user || null,
-      phone_number: user?.phone_number || null,
-      location: user?.location || null,
+    return result;
+  } catch (error) {
+    console.error('Login controller error:', error);
+    return { 
+      success: false, 
+      message: 'Login failed due to server error' 
     };
   }
+}
+@Get('check-session')
+checkSession(@Req() req: Request) {
+  const user = req.session.user;
+  return {
+    loggedIn: !!user,
+    user: user || null,
+    phone_number: user?.phone_number || null,
+    location: user?.location || null,
+  };
+}
 
   @Post('logout')
   async logout(@Req() req: Request) {
@@ -83,7 +80,6 @@ export class AuthController {
             console.error('Logout error:', err);
             return reject({ success: false, message: 'Logout failed' });
           }
-          // ✅ Clear the session cookie
           if (req.res) {
             req.res.clearCookie('connect.sid', {
               path: '/',
