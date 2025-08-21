@@ -72,8 +72,10 @@ model user {
 
 model Session {
   id        String   @id
+  sid       String   @unique @map("sid")
   data      String   @db.Text
   expiresAt DateTime
 
+  @@map("sessions")
   @@index([expiresAt])
 }
