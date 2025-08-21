@@ -51,41 +51,39 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { email: email.trim() },
-      });
+async login(email: string, password: string) {
+  try {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.trim() },
+    });
 
-      if (!user) {
-        return { success: false, message: '📭 Email not found' };
-      }
-
-      // ✅ FIX: Use direct bcrypt comparison without hash replacement
-      const isMatch = await bcrypt.compare(password.trim(), user.password);
-
-      if (!isMatch) {
-        return { success: false, message: '🔐 Password does not match' };
-      }
-
-      return {
-        success: true,
-        message: '✅ Login successful 🎊',
-        user: {
-          email: user.email,
-          username: user.username,
-          full_name: user.full_name,
-          role: user.role,
-          location: user.location,
-          phone_number: user.phone_number,
-        },
-      };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        success: false,
-        message: `Internal Server Error: ${errorMessage}`,
-      };
+    if (!user) {
+      return { success: false, message: '📭 Email not found' };
     }
+
+    const isMatch = await bcrypt.compare(password.trim(), user.password);
+
+    if (!isMatch) {
+      return { success: false, message: '🔐 Password does not match' };
+    }
+
+    return {
+      success: true,
+      message: '✅ Login successful 🎊',
+      user: {
+        email: user.email,
+        username: user.username,
+        full_name: user.full_name,
+        role: user.role,
+        location: user.location,
+        phone_number: Number(user.phone_number), // 👈 CONVERT BigInt to Number
+      },
+    };
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      success: false,
+      message: `Internal Server Error: ${errorMessage}`,
+    };
   }
-}
+}}
