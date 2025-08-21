@@ -69,3 +69,11 @@ model user {
   createdAt    DateTime @default(now())
   cart         cart[]
 }
+
+model Session {
+  id        String   @id
+  data      String   @db.Text
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
