@@ -1,40 +1,47 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+model user {
+  id       Int     @id @default(autoincrement())
+  email    String  @unique @db.VarChar(255)
+  name     String?
+
+  // Relations
+  carts    cart[]
+}
+
 model cart {
-  id          Int     @id @default(autoincrement())
-  description String  @db.VarChar(100)
-  price       Decimal @db.Decimal(65, 0)
-  image       String  @db.VarChar(100)
+  id          Int    @id @default(autoincrement())
+  description String
+  price       Float
+  image       String?
   quantity    Int
   clothe_id   Int
   email       String  @db.VarChar(255)
 
-  user    user    @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: NoAction, map: "fk_cart_user_email")
-  clothes clothes @relation(fields: [clothe_id], references: [id], onDelete: Cascade) // ← add this
-
-  @@index([email], map: "fk_cart_user_email")
+  // Relations
+  user user @relation(fields: [email], references: [email], onDelete: Cascade, map: "fk_cart_user_email_unique")
 }
-
 
 model clothes {
-  id          Int      @id @default(autoincrement())
-  description String   @db.Text
-  category    String   @db.VarChar(50)
-  price       Decimal  @db.Decimal(10, 2)
-  image       String   @db.Text
-  created_at  DateTime @default(now())
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  image       String?
 }
 
-model order_items {
-  order_item_id Int       @id
+// --- ORDER ITEMS MODEL ---
+model OrderItem {
+  order_item_id Int       @id @default(autoincrement())
   order_id      Int
   product_id    Int
   quantity      Int
@@ -44,12 +51,13 @@ model order_items {
   delivery      String    @db.VarChar(200)
   date_created  DateTime? @default(now()) @db.Timestamp(0)
 
-  @@index([order_id], map: "order_id")
-  @@index([product_id], map: "product_id")
+  @@index([order_id], map: "idx_order_items_order_id")
+  @@index([product_id], map: "idx_order_items_product_id")
 }
 
-model orders {
-  order_id   Int       @id
+// --- ORDERS MODEL ---
+model Order {
+  order_id   Int       @id @default(autoincrement())
   user_id    String    @db.VarChar(200)
   name       String    @db.VarChar(255)
   email      String    @db.VarChar(255)
@@ -58,18 +66,7 @@ model orders {
   created_at DateTime? @default(now()) @db.Timestamp(0)
 }
 
-model user {
-  user_id      Int      @id @default(autoincrement())
-  full_name    String
-  phone_number Int
-  username     String
-  email        String   @unique(map: "unique_email") @db.VarChar(255)
-  location     String
-  password     String
-  createdAt    DateTime @default(now())
-  cart         cart[]
-}
-
+// --- SESSION MODEL ---
 model Session {
   id        String   @id
   sid       String   @unique @map("sid")
@@ -77,5 +74,5 @@ model Session {
   expiresAt DateTime
 
   @@map("sessions")
-  @@index([expiresAt])
+  @@index([expiresAt], map: "idx_sessions_expires_at")
 }
