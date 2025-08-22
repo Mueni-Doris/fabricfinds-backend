@@ -19,7 +19,7 @@ export class SessionMiddleware implements NestMiddleware {
   use(req: any, res: any, next: () => void) {
     cookieParser()(req, res, () => {
       session({
-        secret: process.env.SESSION_SECRET || 'your-secret-key',
+        secret: process.env.SESSION_SECRET || '722e32873a42290200df042c0c451d6d15097b0f6598ba205e1df241562af806et',
         resave: false,
         saveUninitialized: false,
         store: this.sessionStore,
