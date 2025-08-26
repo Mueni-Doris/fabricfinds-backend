@@ -16,7 +16,7 @@ async function bootstrap() {
       if (
         origin.includes('localhost:3000') ||
         origin.includes('.vercel.app') ||
-        origin.includes('fabricfinds-backend-production.up.railway.app')
+        origin.includes('https://fabricfinds-backend-1.onrender.com')
       ) {
         return callback(null, true);
       }
